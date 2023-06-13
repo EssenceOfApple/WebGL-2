@@ -1,0 +1,69 @@
+// Vertex shader
+const vertexShaderSource = `
+attribute vec3 vertex;
+attribute vec3 normal;
+attribute vec2 texture;
+uniform mat4 ModelViewProjectionMatrix, normalMat;
+uniform mat4 ModelViewMatrix, ProjectionMatrix;
+varying vec3 normalInterp;
+varying vec3 vertPos;
+uniform vec4 color;
+varying vec2 texcoord;
+
+void main() {
+    vec4 vertPos4 = ModelViewMatrix * vec4(vertex, 1.0);
+    vertPos = vec3(vertPos4) / vertPos4.w;
+    normalInterp = vec3(normalMat * vec4(normal, 0.0));
+    gl_Position = ProjectionMatrix * vertPos4;
+   if(color.z>0.5)
+   {
+      texcoord = texture;
+       gl_Position = ModelViewProjectionMatrix * vec4(vertex, 1.0);
+   }
+}`;
+
+
+// Fragment shader
+const fragmentShaderSource = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+   precision highp float;
+#else
+   precision mediump float;
+#endif
+
+uniform vec4 color;
+varying vec3 normalInterp;  // Surface normal
+varying vec3 vertPos;       // Vertex position
+uniform float ambientCoefficient;   // Ambient reflection coefficient
+uniform float diffuseCoefficient;   // Diffuse reflection coefficient
+uniform float specularCoefficient;   // Specular reflection coefficient
+uniform float shininess; // Shininess
+uniform vec3 ambientColor;
+uniform vec3 diffuseColor;
+uniform vec3 specularColor;
+uniform vec3 lightPosition;
+varying vec2 texcoord;
+uniform sampler2D tmu;
+
+void main() {
+  vec3 vNormal = normalize(normalInterp);
+  vec3 light = normalize(lightPosition);
+
+  float dotProduct = max(dot(vNormal, light), 0.0);
+  float specular = 0.0;
+
+  if(dotProduct > 0.0) {
+    vec3 reflect = reflect(-light, vNormal);      
+    vec3 n_vertPos = normalize(-vertPos); 
+    float specAngle = max(dot(reflect, n_vertPos), 0.0);
+    specular = pow(specAngle, shininess);
+  }
+  gl_FragColor = vec4(ambientCoefficient * ambientColor 
+                  + diffuseCoefficient * dotProduct * diffuseColor 
+                  + specularCoefficient * specular * specularColor, 1.0);
+
+    if(color.z>0.5){
+    vec4 tex = texture2D(tmu, texcoord);
+    gl_FragColor = tex;
+    }
+}`;
