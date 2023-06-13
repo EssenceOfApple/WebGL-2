@@ -205,10 +205,6 @@ function GetCurrentZPosition(h) {
     return Math.pow(Math.abs(h) - height, 2) / (2 * p);
 }
 
-// surface - parabolic humming-top
-// x = ((|z| - h)^2 / 2*p)) * cosB
-// y = ((|z| - h)^2 / 2*p)) * sinB
-// z = z
 function CreateSurfaceData() {
     let vertexList = [];
 
