@@ -18,7 +18,7 @@ let radius = 0.5;
 let soundFileName = "sound.mp3";
 let source;
 let panner;
-let highpassFilter;
+let highshelfFilter;
 let defaultFrequency;
 
 function deg2rad(angle) {
@@ -337,8 +337,8 @@ function Sound()
         audioContext.decodeAudioData(audioData, (buffer) => {
 
                 source.buffer = buffer;
-                source.connect(highpassFilter);
-                highpassFilter.connect(panner);
+                source.connect(highshelfFilter);
+                highshelfFilter.connect(panner);
                 panner.connect(audioContext.destination);
                 source.loop = true;
             }, (err) => {alert(err)}
@@ -353,10 +353,11 @@ function Sound()
 
 function CreateFilter()
 {
-    highpassFilter = audioContext.createBiquadFilter();
-    highpassFilter.type = "highpass";
-    defaultFrequency =  highpassFilter.frequency.value;
-    highpassFilter.frequency.value = 1000;
+    highshelfFilter = audioContext.createBiquadFilter();
+    highshelfFilter.type = "highshelf";
+    defaultFrequency =  highshelfFilter.frequency.value;
+    highshelfFilter.frequency.value = 1000;
+    highshelfFilter.gain.value = 6;
 }
 
 function CreatePanner()
@@ -454,7 +455,7 @@ function Update()
 }
 
 function Redraw() {
-    highpassFilter.frequency.value = inputData.filter.checked ? 1000 : defaultFrequency;
+    highshelfFilter.frequency.value = inputData.filter.checked ? 1000 : defaultFrequency;
     surface.BufferData(CreateSurfaceData());
     sound.BufferData(CreateSoundData());
     draw();
